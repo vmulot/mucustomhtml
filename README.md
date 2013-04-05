@@ -1,6 +1,8 @@
 prestashop-customHtmlBlocks
 ===========================
 
+v1 :
+
 Module to create custom html blocks on Prestashop 1.5
 
 - Unzip folder to your prestashop module directory

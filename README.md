@@ -1,7 +1,8 @@
 prestashop-customHtmlBlocks
 ===========================
 
-v1 :
+V1.0
+Tested on Prestashop 1.5.4
 
 Module to create custom html blocks on Prestashop 1.5
 

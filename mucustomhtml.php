@@ -54,17 +54,6 @@ class MuCustomHtml extends Module {
 
 		return true;
 	}
-	
-	/*public function displayForm()
-	{
-		if(isset($errors))
-			$this->context->smarty->assign('errors', $errors);
-		
-		$this->context->smarty->assign('request_uri', Tools::safeOutput($_SERVER['REQUEST_URI']));
-		$this->context->smarty->assign('path', $this->_path);
-		
-		return $this->display(__FILE__, 'views/templates/admin/configure.tpl');
-	}*/
 
 	public function hookDisplayHeader()
 	{

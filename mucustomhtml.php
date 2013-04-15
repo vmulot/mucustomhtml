@@ -64,7 +64,7 @@ class MuCustomHtml extends Module {
 	{
 		$id_lang = (int)$this->context->language->id;
 		
-		$mucustomhtml = MuCustomHtmlData::findAllbyIdLang($id_lang);
+		$mucustomhtml = MuCustomHtmlModel::findAllbyIdLang($id_lang);
 		
 		$this->smarty->assign(array(
 			'customhtmlblocks' => $mucustomhtml

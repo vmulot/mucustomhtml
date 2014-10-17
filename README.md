@@ -1,14 +1,14 @@
-prestashop-customHtmlBlocks
+Prestashop module Mu Custom Html Blocks
 ===========================
 
-V1.0
-Tested on Prestashop 1.5.4
+V2.0
+Tested on Prestashop 1.6.9
 
-Module to create custom html blocks on Prestashop 1.5
+Module to create custom html blocks on Prestashop
 
 - Unzip folder to your prestashop module directory
-- in Prestashop 1.5 admin, go to Modules, find Mu Custom Html, and install it.
-This module is hooked in Header, Home and Customer Account (displayHeader, displayHome & displayCustomerAccount)
+- in Prestashop 1.6.9 admin, go to Modules, find Mu Custom Html, and install it.
+- Configure number of blocks you need
 
 - Then add a new tab, Administration => Menus => add/create
     - Name : what ever you want
@@ -20,9 +20,10 @@ This module is hooked in Header, Home and Customer Account (displayHeader, displ
 
 You can now start to add some blocks.
 
+For each block you can add a title, some custom tet (wysiwyg), a picture and a link.
+
 
 Features to come :
 ------------------
 
 - Add admin tab when installing module
-- Choice of the hook to display html blocks

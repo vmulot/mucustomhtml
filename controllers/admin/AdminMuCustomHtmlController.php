@@ -16,48 +16,49 @@ class AdminMuCustomHtmlController extends ModuleAdminController
 	
 	public function __construct()
 	{
+		$this->bootstrap = true;
 		$this->table = 'mucustomhtml';
 		$this->className = 'MuCustomHtmlModel';
 		$this->lang = true;
 		$this->deleted = false;
-		$this->colorOnBackground = false;
-		$this->bulk_actions = array('delete' => array('text' => $this->l('Delete selected'), 'confirm' => $this->l('Delete selected items?')));
-		$this->context = Context::getContext();
 		
+		$this->explicitSelect = true;
 		$this->_defaultOrderBy = 'position';
 
-		parent::__construct();
-	}
-	
-	/**
-	 * Function used to render the list to display for this controller
-	 */
-	public function renderList()
-	{
-		$this->addRowAction('edit');
-		$this->addRowAction('delete');
-		
+		$this->context = Context::getContext();
 		$this->bulk_actions = array(
 			'delete' => array(
 				'text' => $this->l('Delete selected'),
-				'confirm' => $this->l('Delete selected items?')
-				)
-			);
-		
+				'confirm' => $this->l('Delete selected items?'),
+				'icon' => 'icon-trash'
+			)
+		);
+
+		$this->fieldImageSettings = array(
+			'name' => 'blockpicture',
+			'dir' => 'mu'
+		);
+
+		$this->block_img_path = _PS_IMG_DIR_.'mu/';
+
 		$this->fields_list = array(
 			'id_mucustomhtml' => array(
 				'title' => $this->l('ID'),
 				'align' => 'center',
-				'width' => 25
+				'class' => 'fixed-width-xs'
 			),
 			'blockname' => array(
-				'title' => $this->l('Name'),
-				'width' => 'auto'
+				'title' => $this->l('Block Title'),
 			),
+			'image' => array(
+  				'title' => $this->l('Main Picture'),
+  				'width' => 70,
+  				'image' => $this->fieldImageSettings["dir"]
+  			),
 			'position' => array(
 				'title' => $this->l('Position'),
-				'width' => 40,
 				'align' => 'center',
+				'class' => 'fixed-width-sm',
 				'position' => 'position'
 			),
 			'active' => array(
@@ -65,25 +66,79 @@ class AdminMuCustomHtmlController extends ModuleAdminController
 				'active' => 'status',
 				'align' => 'center',
 				'type' => 'bool',
-				'width' => 70,
+				'class' => 'fixed-width-sm',
 				'orderby' => false
 			)
 		);
-		$lists = parent::renderList();
-		
-		parent::initToolbar();
-		
-		return $lists;
+		parent::__construct();
 	}
-				
+	public function renderList()
+	{
+		$this->addRowAction('edit');
+		$this->addRowAction('delete');
+
+		return parent::renderList();
+	}
+
+	public function initPageHeaderToolbar()
+	{	
+
+		$this->page_header_toolbar_title = $this->l('Custom html blocks');
+		if ($this->display != 'edit' || $this->display != 'add')
+			$this->page_header_toolbar_btn['addmucustomhtml'] = array(
+				'href' => $this->context->link->getAdminLink('AdminMuCustomHtml').'&addmucustomhtml',
+				'desc' => $this->l('Add new html block', null, null, false),
+				'icon' => 'process-icon-new'
+			);
+
+		parent::initPageHeaderToolbar();
+	}
+	
+	public function initToolbar()
+	{
+		if (empty($this->display))
+		{
+			$this->toolbar_btn['new'] = array(
+				'href' => self::$currentIndex.'&amp;add'.$this->table.'&amp;token='.$this->token,
+				'desc' => $this->l('Add New')
+			);
+		}
+		if (Tools::getValue('id_mucustomhtml') && !Tools::isSubmit('updatecategory'))
+		{
+			$this->toolbar_btn['edit'] = array(
+				'href' => self::$currentIndex.'&amp;update'.$this->table.'&amp;id_cmucustomhtml='.(int)Tools::getValue('id_mucustomhtml').'&amp;token='.$this->token,
+				'desc' => $this->l('Edit')
+			);
+		}
+		parent::initToolbar();
+	}
+
+	public function initContent()
+	{
+		if ($this->action == 'select_delete')
+			$this->context->smarty->assign(array(
+				'delete_form' => true,
+				'url_delete' => htmlentities($_SERVER['REQUEST_URI']),
+				'boxes' => $this->boxes,
+			));
+
+		parent::initContent();
+	}
+
 	public function renderForm()
 	{
+		if (!($obj = $this->loadObject(true)))
+			return;
+
+		$image = $this->block_img_path.$obj->id.'.jpg';
+		$image_url = ImageManager::thumbnail($image, $this->table.'_'.(int)$obj->id.'.'.$this->imageType, 350, $this->imageType, true, true);
+		$image_size = file_exists($image) ? filesize($image) / 1000 : false;
 		
 		$this->fields_form = array(
-			'tinymce' => true,
+			'tinymce'=> true,
 			'legend' => array(
 				'title' => $this->l('Custom html block'),
-				'image' => '../img/admin/cog.gif'
+				'icon' => 'icon-cogs',
 			),
 			'input' => array(
 				array(
@@ -91,14 +146,6 @@ class AdminMuCustomHtmlController extends ModuleAdminController
 					'name' => 'blockname',
 					'label' =>  $this->l('Name'),
 					'size' => 40
-				),
-				array(
-					'type' => 'text',
-					'name' => 'cssclass',
-					'label' =>  $this->l('Css class'),
-					'size' => 40,
-					'lang' => true,
-					'desc' => $this->l('Add a css class to block element')
 				),
 				array(
 					'type' => 'textarea',
@@ -110,11 +157,16 @@ class AdminMuCustomHtmlController extends ModuleAdminController
 					'label' => $this->l('Custom html:'),
 				),
 				array(
-					'type' => 'radio',
+					'type' => 'text',
+					'label' => $this->l('Target URL'),
+					'name' => 'link',
+					'lang' => true,
+				),
+				array(
+					'type' => 'switch',
 					'label' => $this->l('Displayed:'),
 					'name' => 'active',
 					'required' => false,
-					'class' => 't',
 					'is_bool' => true,
 					'values' => array(
 						array(
@@ -127,18 +179,43 @@ class AdminMuCustomHtmlController extends ModuleAdminController
 							'value' => 0,
 							'label' => $this->l('Disabled')
 						)
-					)
+					),
+				),
+				array(
+					'type' => 'file',
+					'label' => $this->l('Picture'),
+					'name' => 'blockpicture',
+					'display_image' => true,
+					'image' => $image_url ? $image_url : false,
+					'size' => $image_size,
+					'hint' => $this->l('Block picture.')
 				),
 			),
 			'submit' => array(
 				'title' => $this->l('Save'),
-				'class' => 'button'
+				'name' => 'submitAdd'.$this->table
 			)
 		);
 
-		if (!($obj = $this->loadObject(true)))
-			return;
-
 		return parent::renderForm();
+	}
+
+	protected function postImage($id)
+	{
+
+		$ret = parent::postImage($id);
+
+		if (($id_mucustomhtml = (int)Tools::getValue('id_mucustomhtml')) && isset($_FILES) && count($_FILES) && file_exists($this->block_img_path.$id_mucustomhtml.'.jpg'))
+		{
+			$images_types = ImageType::getImagesTypes('stores');
+			foreach ($images_types as $k => $image_type)
+			{
+				ImageManager::resize($this->block_img_path.$id_mucustomhtml.'.jpg',
+							$this->block_img_path.$id_mucustomhtml.'-'.stripslashes($image_type['name']).'.jpg',
+							(int)$image_type['width'], (int)$image_type['height']
+				);
+			}
+		}
+		return $ret;
 	}
 }

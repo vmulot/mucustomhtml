@@ -1,25 +1,29 @@
 <?php
 class MuCustomHtmlModel extends ObjectModel
 {
- 	/** @var string  */
 	public $htmlcontent;
 	public $blockname;
+	public $link;
 	public $active = 1;
 	public $position;
-	public $cssclass;
-	/**
-	 * @see ObjectModel::$definition
-	 */
+
+	public function __construct($id_mucustomhtml = null, $id_lang = null)
+	{
+		parent::__construct($id_mucustomhtml);
+		$this->id_image = ($this->id && file_exists( _PS_IMG_DIR_.'mu/'.(int)$this->id.'.jpg')) ? (int)$this->id : false;
+		$this->image_dir =  _PS_IMG_DIR_.'mu/';
+	}
+
 	public static $definition = array(
 		'table' => 'mucustomhtml',
 		'primary' => 'id_mucustomhtml',
 		'multilang' => true,
 		'fields' => array(
 			'blockname' => array('type' => self::TYPE_STRING, 'validate' => 'isGenericName', 'required'=> true),
-			'cssclass' => array('type' => self::TYPE_STRING,'lang' => true, 'validate' => 'isGenericName'),
 			'active' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true),
 			'position' => array('type' => self::TYPE_INT),
 			'htmlcontent' => array('type' => self::TYPE_HTML, 'lang' => true, 'validate' => 'isCleanHtml', 'size' => 3999999999999),
+			'link' => array('type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isUrl', 'required' => true, 'size' => 255),
 		),
 	);
 			
@@ -34,7 +38,12 @@ class MuCustomHtmlModel extends ObjectModel
     	LIMIT 6';
 
     	if ($rows = Db :: getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS($sql)) {
-        	return $rows;
+    		$blocks = array();
+    		foreach($rows as $block){
+    			$block['has_picture'] = file_exists(_PS_IMG_DIR_.'mu/'.(int)($block['id_mucustomhtml']).'.jpg');
+    			$blocks[] = $block;
+    		}
+        	return $blocks;
         }
         return array();
     }
